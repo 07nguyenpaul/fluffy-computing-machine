@@ -70,11 +70,12 @@
 /* 0 */
 /***/ (function(module, exports) {
 
-const $recBtn = $('#rec');
 
-let accessToken = "fb32a93eeeca42f8a537c3217b48f1a4",
+let accessToken = "c03ebe1ad04942d9952ffa04dc7f2b7e",
+    accessTokenWeather= "4906bdaca138277e3ca24c69af9a2957",
     baseUrl = "https://api.api.ai/v1/",
     $speechInput,
+    $recBtn,
     recognition,
     messageRecording = "Recording...",
     messageCouldntHear = "I couldn't hear you, could you say that again?",
@@ -93,7 +94,6 @@ $(document).ready(function() {
   });
 
   $recBtn.on("click", function(event) {
-    debugger;
     switchRecognition();
   });
 
@@ -104,8 +104,13 @@ $(document).ready(function() {
   });
 });
 
+
+function switchRecognition() {
+  if (recognition) { stopRecognition(); }
+  else { startRecognition(); }
+}
+
 function startRecognition() {
-  debugger
   recognition = new webkitSpeechRecognition();
   recognition.continuous = false;
       recognition.interimResults = false;
@@ -136,7 +141,6 @@ function startRecognition() {
 }
 
 function stopRecognition() {
-  debugger
   if (recognition) {
     recognition.stop();
     recognition = null;
@@ -144,10 +148,6 @@ function stopRecognition() {
   updateRec();
 }
 
-function switchRecognition() {
-  if (recognition) { stopRecognition(); }
-  else { startRecognition(); }
-}
 
 function setInput(text) {
   $speechInput.val(text);
@@ -156,6 +156,10 @@ function setInput(text) {
 
 function updateRec() {
   $recBtn.text(recognition ? "Stop" : "Speak");
+}
+
+function clearInput() {
+  return $speechInput.val('');
 }
 
 function send() {
@@ -168,7 +172,7 @@ function send() {
     headers: {
       "Authorization": "Bearer " + accessToken
     },
-    data: JSON.stringify({q: text, lang: "en"}),
+    data: JSON.stringify({sessionId: "1234", q: text, lang: "en"}),
 
     success: function(data) {
       prepareResponse(data);
@@ -177,11 +181,12 @@ function send() {
       respond(messageInternalError);
     }
   });
+  clearInput();
 }
 
 function prepareResponse(val) {
   var debugJSON = JSON.stringify(val, undefined, 2),
-    spokenResponse = val.result.speech;
+      spokenResponse = val.result.speech;
 
   respond(spokenResponse);
   debugRespond(debugJSON);
@@ -205,6 +210,27 @@ function respond(val) {
   }
 
   $("#spokenResponse").addClass("is-active").find(".spoken-response__text").html(val);
+}
+
+function getWeather() {
+  let text = $speechInput.val();
+  let result =
+
+  $.ajax({
+    type: "GET",
+    url: "http://api.openweathermap.org/data/2.5/" + "weather/" + "?q=" + text + "&appid=" + accessTokenWeather,
+    dataType: "json",
+    data: JSON.stringify(['weather', 'description', 'main', 'temp']),
+
+    success: function(data) {
+      console.log(data);
+      // prepareResponse(data);
+      let response = $()
+    },
+    error: function() {
+      respond(messageInternalError);
+    }
+  });
 }
 
 
